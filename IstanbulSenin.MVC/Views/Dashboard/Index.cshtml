@@ -1,0 +1,299 @@
+@model IstanbulSenin.BLL.Services.Dashboard.DashboardDto
+
+@{
+    ViewData["Title"] = "Dashboard - İstatistikler";
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="container-fluid mt-4">
+    <!-- Başlık -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-speedometer2"></i> Dashboard</h1>
+        <div class="btn-group">
+            <a href="@Url.Action("Index")" class="btn btn-outline-primary">Bu Hafta</a>
+            <a href="@Url.Action("DateRange", new { startDate = DateTime.Now.AddDays(-30), endDate = DateTime.Now })" 
+               class="btn btn-outline-primary">Son 30 Gün</a>
+        </div>
+    </div>
+
+    <!-- İstatistik Kartları -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title text-uppercase mb-2">Toplam Bildirim</h6>
+                    <h2 class="mb-0">@Model.TotalNotifications</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title text-uppercase mb-2">Gönderildi</h6>
+                    <h2 class="mb-0">@Model.SentNotifications</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-white shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title text-uppercase mb-2">Beklemede</h6>
+                    <h2 class="mb-0">@Model.PendingNotifications</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title text-uppercase mb-2">Başarı Oranı</h6>
+                    <h2 class="mb-0">@Model.SuccessRate%</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grafik Satırı -->
+    <div class="row mb-4">
+        <!-- Günlük İstatistikler -->
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">📈 Günlük Gönderim İstatistikleri</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="dailyChart" height="80"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hedef Kitle Dağılımı -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">👥 Hedef Kitle Dağılımı</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="audienceChart" height="80"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Log İstatistikleri -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">📊 Gönderim Durumu</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <div class="p-3 bg-success bg-opacity-10 rounded mb-2">
+                                <h3 class="text-success mb-0">@Model.SuccessfulLogs</h3>
+                                <small class="text-muted">Başarılı</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-danger bg-opacity-10 rounded mb-2">
+                                <h3 class="text-danger mb-0">@Model.FailedLogs</h3>
+                                <small class="text-muted">Başarısız</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-warning bg-opacity-10 rounded mb-2">
+                                <h3 class="text-warning mb-0">@Model.TestLogs</h3>
+                                <small class="text-muted">Test</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Son Gönderilen Bildirimler -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">📌 Son Gönderilen Bildirimler</h5>
+                </div>
+                <div class="card-body">
+                    @if (!Model.RecentNotifications.Any())
+                    {
+                        <div class="alert alert-info mb-0">
+                            Henüz bildirim gösterilecek veri yok.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Başlık</th>
+                                        <th>Hedef Kitle</th>
+                                        <th>Durum</th>
+                                        <th>Oluşturuldu</th>
+                                        <th>Gönderildi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var notif in Model.RecentNotifications)
+                                    {
+                                        <tr>
+                                            <td class="fw-bold">@notif.Title</td>
+                                            <td>
+                                                @switch (notif.TargetAudience)
+                                                {
+                                                    case "guest":
+                                                        <span class="badge bg-warning">Misafirler</span>
+                                                        break;
+                                                    case "regular":
+                                                        <span class="badge bg-info">Kayıtlılar</span>
+                                                        break;
+                                                    default:
+                                                        <span class="badge bg-secondary">Herkes</span>
+                                                        break;
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (notif.IsSent)
+                                                {
+                                                    <span class="badge bg-success">✓ Gönderildi</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-light text-dark border">Beklemede</span>
+                                                }
+                                            </td>
+                                            <td class="text-muted small">@notif.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                                            <td class="text-muted small">
+                                                @if (notif.SentAt.HasValue)
+                                                {
+                                                    @notif.SentAt.Value.ToString("dd.MM.yyyy HH:mm")
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">—</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+
+<script>
+    // Günlük İstatistikler Grafik
+    const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+    new Chart(dailyCtx, {
+        type: 'line',
+        data: {
+            labels: [@string.Join(", ", Model.DailyStats.Select(d => $"'{d.Date}'"))],
+            datasets: [{
+                label: 'Gönderilen Bildirimler',
+                data: [@string.Join(", ", Model.DailyStats.Select(d => d.Count))],
+                borderColor: '#0d6efd',
+                backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#0d6efd',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 5,
+                pointHoverRadius: 7
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+
+    // Hedef Kitle Dağılımı Pie Chart
+    const audienceCtx = document.getElementById('audienceChart').getContext('2d');
+    new Chart(audienceCtx, {
+        type: 'doughnut',
+        data: {
+            labels: [@string.Join(", ", Model.TargetAudienceDistribution.Select(d => $"'{d.Key}'"))],
+            datasets: [{
+                data: [@string.Join(", ", Model.TargetAudienceDistribution.Select(d => d.Value))],
+                backgroundColor: [
+                    '#0d6efd',
+                    '#198754',
+                    '#ffc107',
+                    '#dc3545',
+                    '#6f42c1'
+                ],
+                borderColor: '#fff',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+</script>
+
+<style>
+    .card {
+        border: none;
+        border-radius: 0.5rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .bg-opacity-10 {
+        opacity: 0.1;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+</style>

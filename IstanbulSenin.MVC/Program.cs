@@ -1,5 +1,6 @@
 using IstanbulSenin.BLL.Services.AdminUsers;
 using IstanbulSenin.BLL.Services.Auth;
+using IstanbulSenin.BLL.Services.Dashboard;
 using IstanbulSenin.BLL.Services.MiniApps;
 using IstanbulSenin.BLL.Services.Notifications;
 using IstanbulSenin.BLL.Services.Sections;
@@ -78,6 +79,7 @@ builder.Services.AddScoped<IAdminUserService, AdminUserService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<INotificationLogService, NotificationLogService>();
 builder.Services.AddScoped<ISeedingService, SeedingService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 var app = builder.Build();
 
