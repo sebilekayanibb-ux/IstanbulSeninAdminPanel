@@ -17,7 +17,6 @@ namespace IstanbulSenin.DAL
         public DbSet<MiniAppItem> MiniAppItems { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<NotificationLog> NotificationLogs { get; set; }
-        public DbSet<QRCode> QRCodes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -58,24 +57,6 @@ namespace IstanbulSenin.DAL
                     (c1, c2) => c1.SequenceEqual(c2),
                     c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
                     c => c.ToList()));
-
-            // QRCode → AppUser foreign key ilişkisi
-            modelBuilder.Entity<QRCode>()
-                .HasOne(q => q.User)
-                .WithMany()
-                .HasForeignKey(q => q.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // QRCode indeksleri
-            modelBuilder.Entity<QRCode>()
-                .HasIndex(q => q.Code)
-                .IsUnique();
-
-            modelBuilder.Entity<QRCode>()
-                .HasIndex(q => q.UserId);
-
-            modelBuilder.Entity<QRCode>()
-                .HasIndex(q => q.ExpiresAt);
         }
     }
 }

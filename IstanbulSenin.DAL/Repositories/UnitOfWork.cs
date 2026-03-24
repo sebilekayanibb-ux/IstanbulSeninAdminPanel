@@ -13,7 +13,6 @@ namespace IstanbulSenin.DAL.Repositories
         private IRepository<NotificationLog>? _notificationLogRepository;
         private IRepository<Section>? _sectionRepository;
         private IRepository<MiniAppItem>? _miniAppItemRepository;
-        private IRepository<QRCode>? _qrCodeRepository;
 
         public UnitOfWork(AppDbContext context)
         {
@@ -38,11 +37,6 @@ namespace IstanbulSenin.DAL.Repositories
         public IRepository<MiniAppItem> MiniAppItems
         {
             get { return _miniAppItemRepository ??= new Repository<MiniAppItem>(_context); }
-        }
-
-        public IRepository<QRCode> QRCodes
-        {
-            get { return _qrCodeRepository ??= new Repository<QRCode>(_context); }
         }
 
         public async Task<int> SaveChangesAsync()

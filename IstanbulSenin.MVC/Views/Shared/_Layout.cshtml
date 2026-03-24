@@ -158,6 +158,9 @@
                 <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Notification" ? "active" : "")" asp-controller="Notification" asp-action="Index">
                     <i class="bi bi-bell"></i> <span>Bildirimler</span>
                 </a>
+                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "QRCode" ? "active" : "")" asp-controller="QRCode" asp-action="Index">
+                    <i class="bi bi-qr-code"></i> <span>QR Kodlar</span>
+                </a>
             }
         </nav>
 
