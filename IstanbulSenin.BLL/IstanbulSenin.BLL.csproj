@@ -16,4 +16,8 @@
     <ProjectReference Include="..\IstanbulSenin.HELPER\IstanbulSenin.HELPER.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Services\QRCodes\" />
+  </ItemGroup>
+
 </Project>

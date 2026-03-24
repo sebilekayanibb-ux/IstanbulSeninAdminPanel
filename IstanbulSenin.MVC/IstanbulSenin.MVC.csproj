@@ -20,4 +20,9 @@
     <ProjectReference Include="..\IstanbulSenin.HELPER\IstanbulSenin.HELPER.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Views\QRCode\" />
+    <Folder Include="Views\Scan\" />
+  </ItemGroup>
+
 </Project>

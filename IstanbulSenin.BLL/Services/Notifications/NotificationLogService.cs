@@ -1,6 +1,7 @@
 using IstanbulSenin.CORE.Entities;
 using IstanbulSenin.CORE.Repositories;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 
 namespace IstanbulSenin.BLL.Services.Notifications
 {
@@ -17,20 +18,20 @@ namespace IstanbulSenin.BLL.Services.Notifications
 
         public async Task<List<NotificationLog>> GetAllAsync()
         {
-            var logs = await _unitOfWork.NotificationLogs.GetAllAsync();
-            return logs
+            var logs = await _unitOfWork.NotificationLogs.Query()
+                .Include(x => x.Notification)
                 .OrderByDescending(x => x.SentAt)
-                .ToList();
+                .ToListAsync();
+            return logs;
         }
 
         public async Task<List<NotificationLog>> GetByNotificationIdAsync(int notificationId)
         {
-            return await Task.FromResult(
-                _unitOfWork.NotificationLogs.Query()
-                    .Where(x => x.NotificationId == notificationId)
-                    .OrderByDescending(x => x.SentAt)
-                    .ToList()
-            );
+            return await _unitOfWork.NotificationLogs.Query()
+                .Include(x => x.Notification)
+                .Where(x => x.NotificationId == notificationId)
+                .OrderByDescending(x => x.SentAt)
+                .ToListAsync();
         }
 
         public async Task LogSuccessAsync(int notificationId, string targetAudience, int? recipientCount = null)
