@@ -1,5 +1,6 @@
 using IstanbulSenin.CORE.Entities;
 using IstanbulSenin.CORE.Repositories;
+using IstanbulSenin.HELPER;
 using Microsoft.Extensions.Logging;
 
 namespace IstanbulSenin.BLL.Services.Notifications
@@ -49,7 +50,7 @@ namespace IstanbulSenin.BLL.Services.Notifications
                 if (string.IsNullOrWhiteSpace(notification.TargetAudience))
                     return (false, "Hedef kitle boş olamaz");
 
-                notification.CreatedAt = DateTime.UtcNow;
+                notification.CreatedAt = DateTimeHelper.GetTurkeyNow();
                 notification.IsSent = false;
 
                 await _unitOfWork.Notifications.AddAsync(notification);
@@ -122,13 +123,13 @@ namespace IstanbulSenin.BLL.Services.Notifications
                         TargetAudience = notification.TargetAudience,
                         RecipientCount = 0,
                         ErrorMessage = null,
-                        SentAt = DateTime.UtcNow
+                        SentAt = DateTimeHelper.GetTurkeyNow()
                     };
 
                     await _unitOfWork.NotificationLogs.AddAsync(testLog);
 
                     notification.IsSent = true;
-                    notification.SentAt = DateTime.UtcNow;
+                    notification.SentAt = DateTimeHelper.GetTurkeyNow();
                     _unitOfWork.Notifications.Update(notification);
 
                     await _unitOfWork.SaveChangesAsync();

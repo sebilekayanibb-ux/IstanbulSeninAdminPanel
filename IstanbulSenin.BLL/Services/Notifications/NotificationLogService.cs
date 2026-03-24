@@ -1,5 +1,6 @@
 using IstanbulSenin.CORE.Entities;
 using IstanbulSenin.CORE.Repositories;
+using IstanbulSenin.HELPER;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 
@@ -42,8 +43,8 @@ namespace IstanbulSenin.BLL.Services.Notifications
                 Status = "Success",
                 TargetAudience = targetAudience,
                 RecipientCount = recipientCount,
-                SentAt = DateTime.UtcNow,
-                Metadata = $"{{\"method\": \"firebase\", \"timestamp\": \"{DateTime.UtcNow:O}\"}}"
+                SentAt = DateTimeHelper.GetTurkeyNow(),
+                Metadata = $"{{\"method\": \"firebase\", \"timestamp\": \"{DateTimeHelper.GetTurkeyNow():O}\"}}"
             };
 
             await _unitOfWork.NotificationLogs.AddAsync(log);
@@ -59,8 +60,8 @@ namespace IstanbulSenin.BLL.Services.Notifications
                 Status = "Failed",
                 TargetAudience = targetAudience,
                 ErrorMessage = errorMessage,
-                SentAt = DateTime.UtcNow,
-                Metadata = $"{{\"error\": \"{errorMessage}\", \"timestamp\": \"{DateTime.UtcNow:O}\"}}"
+                SentAt = DateTimeHelper.GetTurkeyNow(),
+                Metadata = $"{{\"error\": \"{errorMessage}\", \"timestamp\": \"{DateTimeHelper.GetTurkeyNow():O}\"}}"
             };
 
             await _unitOfWork.NotificationLogs.AddAsync(log);
@@ -76,8 +77,8 @@ namespace IstanbulSenin.BLL.Services.Notifications
                 NotificationId = notificationId,
                 Status = "Test",
                 TargetAudience = targetAudience,
-                SentAt = DateTime.UtcNow,
-                Metadata = $"{{\"mode\": \"test\", \"note\": \"Firebase entegrasyonu bekleniyor\", \"timestamp\": \"{DateTime.UtcNow:O}\"}}"
+                SentAt = DateTimeHelper.GetTurkeyNow(),
+                Metadata = $"{{\"mode\": \"test\", \"note\": \"Firebase entegrasyonu bekleniyor\", \"timestamp\": \"{DateTimeHelper.GetTurkeyNow():O}\"}}"
             };
 
             await _unitOfWork.NotificationLogs.AddAsync(log);
