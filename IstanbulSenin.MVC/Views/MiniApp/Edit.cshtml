@@ -1,0 +1,123 @@
+﻿@model IstanbulSenin.CORE.Entities.MiniAppItem
+@using IstanbulSenin.CORE.Enums
+
+<div class="card border-0 shadow-sm p-4 rounded-4">
+    <form asp-action="Edit" enctype="multipart/form-data">
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="Image" />
+
+        <div class="row g-4">
+            <div class="col-lg-4 border-end text-center">
+                <img src="@Model.Image" id="iconPreview" class="rounded-4 border shadow-sm" style="width: 140px; height: 140px; object-fit: cover;" />
+                <input type="file" name="iconFile" id="iconInput" class="form-control form-control-sm mt-3" accept="image/*" />
+                
+                <div class="mt-4 text-start">
+                    <label asp-for="DisplayOrder" class="form-label fw-bold small">
+                        Görüntüleme Sırası <span class="text-muted fw-normal">(isteğe bağlı)</span>
+                    </label>
+                    <input asp-for="DisplayOrder" type="number" class="form-control rounded-3"
+                           placeholder="Boş bırakırsanız mevcut sıra korunur" data-val="false" />
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <label asp-for="Title" class="form-label fw-bold small">Uygulama Adı</label>
+                        <input asp-for="Title" class="form-control rounded-3" />
+                        <span asp-validation-for="Title" class="text-danger small fw-bold mt-1 d-block"></span>
+                    </div>
+                    <div class="col-md-12">
+                        <label asp-for="Url" class="form-label fw-bold small">Uygulama URL</label>
+                        <input asp-for="Url" class="form-control rounded-3" />
+                        <span asp-validation-for="Url" class="text-danger small fw-bold mt-1 d-block"></span>
+                    </div>
+                    <div class="col-md-12">
+                        <label asp-for="LogoUrl" class="form-label fw-bold small">
+                            Logo URL <span class="text-muted fw-normal">(isteğe bağlı, detaylı görünümler için)</span>
+                        </label>
+                        <input asp-for="LogoUrl" class="form-control rounded-3" placeholder="https://..." />
+                    </div>
+                    <div class="col-md-12">
+                        <label asp-for="Description" class="form-label fw-bold small">Açıklama</label>
+                        <textarea asp-for="Description" class="form-control rounded-3" rows="2"></textarea>
+                    </div>
+                    <div class="col-md-12 d-flex gap-4">
+                        <div class="form-check form-switch"><input class="form-check-input" type="checkbox" asp-for="IsNative"><label class="form-check-label small fw-bold">Native</label></div>
+                        <div class="form-check form-switch"><input class="form-check-input" type="checkbox" asp-for="IsTest"><label class="form-check-label small fw-bold">Test</label></div>
+                        <div class="form-check form-switch"><input class="form-check-input" type="checkbox" asp-for="IsHide"><label class="form-check-label small fw-bold">Gizli</label></div>
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-dark mb-1">Bağlı Olduğu Bölümler</label>
+                    <div class="mb-2"><span class="text-danger small fw-bold">@Html.ValidationMessage("SectionError")</span></div>
+                    <div class="row g-2">
+                        @foreach (var s in ViewBag.Sections)
+                        {
+                            <div class="col-md-4">
+                                <div class="selection-card p-2 border rounded-3 d-flex align-items-center">
+                                    <input class="form-check-input me-2" type="checkbox" name="selectedSectionIds" value="@s.Id" @(Model.Sections != null && Model.Sections.Any(x => x.Id == s.Id) ? "checked" : "")>
+                                    <label class="form-check-label small fw-bold mb-0">@s.Title</label>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-primary mb-2">Erişim İzinleri</label>
+                    <div class="row g-2">
+                        @foreach (PermissionType perm in Enum.GetValues(typeof(PermissionType)))
+                        {
+                            <div class="col-md-4">
+                                <div class="selection-card p-2 border rounded-3 d-flex align-items-center">
+                                    <input class="form-check-input me-2" type="checkbox" name="selectedPermissions" value="@perm" @(Model.Permissions != null && Model.Permissions.Contains(perm) ? "checked" : "")>
+                                    <label class="form-check-label small fw-bold mb-0">@perm</label>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-info mb-2">Eklentiler</label>
+                    <div class="row g-2">
+                        @foreach (PluginType plugin in Enum.GetValues(typeof(PluginType)))
+                        {
+                            <div class="col-md-4">
+                                <div class="selection-card p-2 border rounded-3 d-flex align-items-center">
+                                    <input class="form-check-input me-2" type="checkbox" name="selectedPlugins" value="@plugin" @(Model.Plugins != null && Model.Plugins.Contains(plugin) ? "checked" : "")>
+                                    <label class="form-check-label small fw-bold mb-0">@plugin</label>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mt-5 text-end">
+            <a asp-action="Index" class="btn btn-light px-4 rounded-pill me-2">İptal</a>
+            <button type="submit" class="btn btn-primary px-5 rounded-pill shadow fw-bold">Güncelle</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        // İkon önizleme
+        document.getElementById('iconInput').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (ev) {
+                    document.getElementById('iconPreview').src = ev.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+    </script>
+}

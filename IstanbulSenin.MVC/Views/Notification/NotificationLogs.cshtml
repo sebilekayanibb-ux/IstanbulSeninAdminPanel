@@ -1,0 +1,126 @@
+@model List<IstanbulSenin.CORE.Entities.NotificationLog>
+
+@{
+    ViewData["Title"] = "Bildirim Gönderme Detayı";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>📝 Bildirim #@ViewBag.NotificationId Gönderme Geçmişi</h2>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="@Url.Action("Logs")" class="btn btn-secondary">← Tüm Loglar</a>
+            <a href="@Url.Action("Index")" class="btn btn-secondary">← Bildirimlere Dön</a>
+        </div>
+    </div>
+
+    @if (Model.Count == 0)
+    {
+        <div class="alert alert-info">
+            ℹ Bu bildirim henüz gönderilmemiş.
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var log in Model)
+            {
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            @if (log.Status == "Success")
+                            {
+                                <span class="badge bg-success float-start">✓ Başarılı</span>
+                            }
+                            else if (log.Status == "Failed")
+                            {
+                                <span class="badge bg-danger float-start">✗ Başarısız</span>
+                            }
+                            else if (log.Status == "Test")
+                            {
+                                <span class="badge bg-warning text-dark float-start">ℹ Test Modu</span>
+                            }
+                            <span class="float-end text-muted">@log.SentAt.ToString("dd.MM.yyyy HH:mm:ss")</span>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-2">
+                                <strong>Hedef Kitle:</strong>
+                                @if (log.TargetAudience == "all")
+                                {
+                                    <span class="badge bg-info">Herkese</span>
+                                }
+                                else if (log.TargetAudience == "guest")
+                                {
+                                    <span class="badge bg-secondary">Misafirlere</span>
+                                }
+                                else if (log.TargetAudience == "regular")
+                                {
+                                    <span class="badge bg-primary">Kayıtlılara</span>
+                                }
+                            </p>
+
+                            @if (log.RecipientCount.HasValue)
+                            {
+                                <p class="mb-2">
+                                    <strong>Alıcı Sayısı:</strong> <span class="badge bg-dark">@log.RecipientCount</span>
+                                </p>
+                            }
+
+                            @if (!string.IsNullOrEmpty(log.ErrorMessage))
+                            {
+                                <div class="alert alert-danger mb-2" role="alert">
+                                    <strong>Hata Mesajı:</strong><br />
+                                    @log.ErrorMessage
+                                </div>
+                            }
+
+                            @if (!string.IsNullOrEmpty(log.Metadata))
+                            {
+                                <div class="card mt-3">
+                                    <div class="card-header bg-light">
+                                        <small>Metadata</small>
+                                    </div>
+                                    <div class="card-body">
+                                        <code>
+                                            <pre>@log.Metadata</pre>
+                                        </code>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<style>
+    .card {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        border: none;
+    }
+
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    h2 {
+        color: #333;
+        font-weight: 600;
+    }
+
+    code {
+        background-color: #f5f5f5;
+        padding: 1rem;
+        border-radius: 4px;
+        overflow-x: auto;
+    }
+
+    pre {
+        margin: 0;
+        color: #666;
+    }
+</style>

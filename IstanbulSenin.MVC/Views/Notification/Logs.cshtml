@@ -1,0 +1,131 @@
+@model List<IstanbulSenin.CORE.Entities.NotificationLog>
+
+@{
+    ViewData["Title"] = "Bildirim Gönderme Geçmişi";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>📋 Bildirim Gönderme Geçmişi (Logs)</h2>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="@Url.Action("Index")" class="btn btn-secondary">← Bildirimlere Dön</a>
+        </div>
+    </div>
+
+    @if (Model.Count == 0)
+    {
+        <div class="alert alert-info">
+            ℹ Henüz hiç bildirim gönderilmemiş.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Bildirim</th>
+                        <th>Gönderme Tarihi</th>
+                        <th>Durum</th>
+                        <th>Hedef Kitle</th>
+                        <th>Alıcı Sayısı</th>
+                        <th>Hata</th>
+                        <th>Detay</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var log in Model)
+                    {
+                        <tr>
+                            <td>
+                                <span class="badge bg-secondary">@log.Id</span>
+                            </td>
+                            <td>
+                                <strong>@log.Notification?.Title</strong>
+                                <br />
+                                <small class="text-muted">@log.Notification?.Body?.Substring(0, Math.Min(30, log.Notification.Body.Length))...</small>
+                            </td>
+                            <td>
+                                @log.SentAt.ToString("dd.MM.yyyy HH:mm:ss")
+                            </td>
+                            <td>
+                                @if (log.Status == "Success")
+                                {
+                                    <span class="badge bg-success">✓ Başarılı</span>
+                                }
+                                else if (log.Status == "Failed")
+                                {
+                                    <span class="badge bg-danger">✗ Başarısız</span>
+                                }
+                                else if (log.Status == "Test")
+                                {
+                                    <span class="badge bg-warning text-dark">ℹ Test</span>
+                                }
+                            </td>
+                            <td>
+                                @if (log.TargetAudience == "all")
+                                {
+                                    <span class="badge bg-info">Herkese</span>
+                                }
+                                else if (log.TargetAudience == "guest")
+                                {
+                                    <span class="badge bg-secondary">Misafirlere</span>
+                                }
+                                else if (log.TargetAudience == "regular")
+                                {
+                                    <span class="badge bg-primary">Kayıtlılara</span>
+                                }
+                            </td>
+                            <td>
+                                @if (log.RecipientCount.HasValue)
+                                {
+                                    <span class="badge bg-dark">@log.RecipientCount</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(log.ErrorMessage))
+                                {
+                                    <span class="text-danger" title="@log.ErrorMessage">
+                                        @log.ErrorMessage.Substring(0, Math.Min(20, log.ErrorMessage.Length))...
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                            <td>
+                                <a href="@Url.Action("NotificationLogs", new { notificationId = log.NotificationId })" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    Detay
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<style>
+    .table {
+        font-size: 0.95rem;
+    }
+    
+    .badge {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    h2 {
+        color: #333;
+        font-weight: 600;
+    }
+</style>

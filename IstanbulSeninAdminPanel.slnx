@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".gitignore" />
+  </Folder>
+  <Project Path="IstanbulSenin.BLL/IstanbulSenin.BLL.csproj" />
+  <Project Path="IstanbulSenin.CORE/IstanbulSenin.CORE.csproj" />
+  <Project Path="IstanbulSenin.DAL/IstanbulSenin.DAL.csproj" />
+  <Project Path="IstanbulSenin.HELPER/IstanbulSenin.HELPER.csproj" />
+  <Project Path="IstanbulSenin.MVC/IstanbulSenin.MVC.csproj" />
+</Solution>

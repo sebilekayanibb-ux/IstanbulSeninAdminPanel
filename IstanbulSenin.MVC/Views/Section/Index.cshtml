@@ -1,0 +1,164 @@
+@model IEnumerable<IstanbulSenin.CORE.Entities.Section>
+
+@{
+    ViewData["Title"] = "Bölüm Yönetimi";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="text-muted mb-0">Ana sayfa yapısını buradan yönetebilirsiniz.</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary shadow-sm">
+        <i class="bi bi-plus-lg me-2"></i> Yeni Bölüm Ekle
+    </a>
+</div>
+
+@Html.AntiForgeryToken()
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th class="ps-3" style="width: 40px;"></th>
+                    <th class="ps-2">Sıra</th>
+                    <th>Bölüm Detayı</th>
+                    <th>Erişim Rolü</th>
+                    <th>Görünüm Tipi</th>
+                    <th class="text-end pe-4">İşlemler</th>
+                </tr>
+            </thead>
+            <tbody id="sortable-sections">
+                @foreach (var item in Model)
+                {
+                    <tr data-id="@item.Id">
+                        <td class="ps-3 drag-handle" style="cursor: grab; color: #ccc; width: 40px;">
+                            <i class="bi bi-grip-vertical fs-5"></i>
+                        </td>
+                        <td class="ps-2">
+                            <div class="fw-bold text-primary order-badge" style="font-size: 1.1rem;">#@item.DisplayOrder</div>
+                        </td>
+                        <td>
+                            <div class="fw-bold text-dark">@item.Title</div>
+                            <small class="text-muted">ID: @item.Id</small>
+                        </td>
+                        <td>
+                            @if (item.Role == "guest")
+                            {
+                                <span class="badge rounded-pill bg-warning bg-opacity-10 text-warning px-3">Misafir</span>
+                            }
+                            else if (item.Role == "regular")
+                            {
+                                <span class="badge rounded-pill bg-info bg-opacity-10 text-info px-3">Üye</span>
+                            }
+                            else
+                            {
+                                <span class="badge rounded-pill bg-success bg-opacity-10 text-success px-3">Herkes</span>
+                            }
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-window-stack me-2 text-muted"></i>
+                                <span class="text-secondary small fw-medium">@item.Size.ToUpper()</span>
+                            </div>
+                        </td>
+                        <td class="text-end pe-4">
+                            <div class="btn-group shadow-sm rounded-3 overflow-hidden">
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-light btn-sm px-3" title="Düzenle">
+                                    <i class="bi bi-pencil-square text-primary"></i>
+                                </a>
+                                <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline"
+                                      onsubmit="return confirm('@item.Title bölümünü silmek istediğinize emin misiniz?')">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-light btn-sm px-3" title="Sil">
+                                        <i class="bi bi-trash3 text-danger"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                            Henüz bir bölüm eklenmemiş.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .table thead th {
+        background-color: #fafbfc;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+        font-weight: 700;
+        color: #8898aa;
+        padding-top: 1.25rem;
+        padding-bottom: 1.25rem;
+        border-top: none;
+    }
+
+    .table tbody td {
+        padding-top: 1.1rem;
+        padding-bottom: 1.1rem;
+        border-color: #f1f3f9;
+    }
+
+    .badge {
+        font-weight: 700;
+        letter-spacing: 0.02em;
+    }
+
+    .btn-light {
+        background: #fff;
+        border: 1px solid #edf2f7;
+    }
+
+        .btn-light:hover {
+            background: #f8fafc;
+        }
+
+    .drag-handle:hover {
+        color: #aaa !important;
+    }
+
+    .sortable-ghost {
+        opacity: 0.4;
+        background: #f0f4ff;
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.3/Sortable.min.js"></script>
+<script>
+    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+    new Sortable(document.getElementById('sortable-sections'), {
+        handle: '.drag-handle',
+        animation: 150,
+        ghostClass: 'sortable-ghost',
+        onEnd: function () {
+            const rows = document.querySelectorAll('#sortable-sections tr[data-id]');
+            const ids = Array.from(rows).map(r => parseInt(r.dataset.id));
+
+            rows.forEach((row, index) => {
+                row.querySelector('.order-badge').textContent = '#' + (index + 1);
+            });
+
+            fetch('/Section/Reorder', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': token
+                },
+                body: JSON.stringify(ids)
+            });
+        }
+    });
+</script>

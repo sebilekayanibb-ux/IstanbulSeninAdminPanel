@@ -1,0 +1,94 @@
+@model IstanbulSenin.MVC.Models.EditUserViewModel
+@{
+    ViewData["Title"] = "Kullanıcıyı Düzenle";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 p-4">
+
+            <div class="mb-4 p-3 bg-light rounded-3">
+                <div class="small text-muted">Oluşturulma tarihi</div>
+                <div class="fw-bold">@Model.CreatedAt.ToString("dd MMMM yyyy, HH:mm")</div>
+            </div>
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger rounded-3 small py-2 mb-3">
+                    @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <div><i class="bi bi-exclamation-circle me-1"></i>@err.ErrorMessage</div>
+                    }
+                </div>
+            }
+
+            <form asp-action="Edit" id="editUserForm">
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="CreatedAt" />
+
+                <div class="mb-3">
+                    <label asp-for="FullName" class="form-label fw-bold small">Ad Soyad</label>
+                    <input asp-for="FullName" class="form-control rounded-3 bg-light border-0" />
+                    <span asp-validation-for="FullName" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label fw-bold small">E-posta</label>
+                    <input asp-for="Email" class="form-control rounded-3 bg-light border-0" />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="NewPassword" class="form-label fw-bold small">
+                        Yeni Şifre <span class="text-muted fw-normal">(değiştirmek istemiyorsanız boş bırakın)</span>
+                    </label>
+                    <input asp-for="NewPassword" class="form-control rounded-3 bg-light border-0" placeholder="••••••••" />
+                    <span asp-validation-for="NewPassword" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="NewPasswordConfirm" class="form-label fw-bold small">Yeni Şifre Tekrar</label>
+                    <input asp-for="NewPasswordConfirm" class="form-control rounded-3 bg-light border-0" placeholder="••••••••" />
+                    <span asp-validation-for="NewPasswordConfirm" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold small">Rol</label>
+                    <div class="p-3 bg-light rounded-3 d-flex gap-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="Roles" value="Admin" id="roleAdmin"
+                                   checked="@(Model.Roles.Contains("Admin") ? "checked" : null)" />
+                            <label class="form-check-label" for="roleAdmin">Admin</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="Roles" value="SuperAdmin" id="roleSuperAdmin"
+                                   checked="@(Model.Roles.Contains("SuperAdmin") ? "checked" : null)" />
+                            <label class="form-check-label" for="roleSuperAdmin">SuperAdmin</label>
+                        </div>
+                    </div>
+                    <div id="rolesError" class="text-danger small mt-1" style="display:none;">En az bir rol seçilmelidir.</div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">Güncelle</button>
+                    <a asp-action="Index" class="btn btn-light rounded-pill px-4">Vazgeç</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('editUserForm').addEventListener('submit', function (e) {
+            const checked = document.querySelectorAll('input[name="Roles"]:checked').length > 0;
+            const err = document.getElementById('rolesError');
+            if (!checked) {
+                err.style.display = 'block';
+                e.preventDefault();
+            } else {
+                err.style.display = 'none';
+            }
+        });
+    </script>
+}

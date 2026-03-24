@@ -1,0 +1,57 @@
+@model IstanbulSenin.CORE.Entities.Section
+
+@{
+    ViewData["Title"] = "Bölümü Düzenle";
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card p-4 shadow-sm border-0">
+            <form asp-action="Edit">
+                <input type="hidden" asp-for="Id" />
+                <div class="row g-4">
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold">Bölüm Başlığı</label>
+                        <input asp-for="Title" class="form-control form-control-lg bg-light border-0 px-3" placeholder="Örn: Hayatı Kolaylaştıranlar" />
+                        <span asp-validation-for="Title" class="text-danger small fw-bold mt-1 d-block"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Erişim Rolü</label>
+                        <select asp-for="Role" class="form-select border-0 bg-light px-3 py-2">
+                            <option value="all">Herkes</option>
+                            <option value="guest">Giriş Yapmayanlar</option>
+                            <option value="regular">Giriş Yapanlar</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Görünüm Boyutu (Size)</label>
+                        <select asp-for="Size" class="form-select border-0 bg-light px-3 py-2">
+                            <option value="slider">Slider</option>
+                            <option value="grid_vertical_apps">Dikey Grid</option>
+                            <option value="horizontal_apps">Yatay Uygulamalar</option>
+                            <option value="detailed_horizontal_apps">Detaylı Yatay</option>
+                            <option value="detailed_slider">Detaylı Slider</option>
+                            <option value="single_vertical_apps">Tüm Uygulamalar (Tek Kolon)</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold">Görüntüleme Sırası <span class="text-muted fw-normal">(isteğe bağlı)</span></label>
+                        <input asp-for="DisplayOrder" type="number" class="form-control bg-light border-0 px-3" placeholder="Boş bırakırsanız mevcut sıra korunur" />
+                    </div>
+                </div>
+
+                <div class="mt-5 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary px-5 py-2 rounded-pill shadow">Değişiklikleri Kaydet</button>
+                    <a asp-action="Index" class="btn btn-outline-secondary px-5 py-2 rounded-pill">Vazgeç</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
