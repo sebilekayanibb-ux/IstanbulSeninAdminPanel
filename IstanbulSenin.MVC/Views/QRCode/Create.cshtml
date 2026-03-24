@@ -1,0 +1,85 @@
+@using IstanbulSenin.CORE.Entities
+@{
+    ViewData["Title"] = "Yeni QR Kod Oluştur";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-qr-code"></i> Yeni QR Kod Oluştur
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @TempData["Error"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <form asp-action="Create" method="post">
+                        <!-- Kullanıcı Seçimi -->
+                        <div class="mb-3">
+                            <label for="userId" class="form-label">Kullanıcı Seçin <span class="text-danger">*</span></label>
+                            <select id="userId" name="userId" class="form-select" required>
+                                <option value="" disabled selected>— Kullanıcı Seçiniz —</option>
+                                @if (ViewBag.Users != null)
+                                {
+                                    @foreach (var user in ViewBag.Users)
+                                    {
+                                        <option value="@user.Id">@user.UserName (@user.Email)</option>
+                                    }
+                                }
+                            </select>
+                            <small class="form-text text-muted">QR kod hangi kullanıcı için oluşturulacak?</small>
+                        </div>
+
+                        <!-- Geçerlilik Süresi -->
+                        <div class="mb-3">
+                            <label for="expirationDays" class="form-label">Geçerlilik Süresi (Gün) <span class="text-danger">*</span></label>
+                            <input type="number" id="expirationDays" name="expirationDays" class="form-control" 
+                                   min="1" max="365" value="7" required 
+                                   placeholder="1-365 gün">
+                            <small class="form-text text-muted">QR kod kaç gün geçerli olacak? (Min: 1, Maks: 365)</small>
+                        </div>
+
+                        <!-- Açıklama -->
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Açıklama <span class="text-danger">*</span></label>
+                            <textarea id="description" name="description" class="form-control" 
+                                      rows="3" required placeholder="QR kod ne için kullanılacak?"></textarea>
+                            <small class="form-text text-muted">Bu QR kod'un amacını açıklayın.</small>
+                        </div>
+
+                        <!-- Butonlar -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Geri Dön
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-plus-circle"></i> QR Kod Oluştur
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Bilgi Kutusu -->
+            <div class="alert alert-info mt-4" role="alert">
+                <h6 class="alert-heading">
+                    <i class="bi bi-info-circle"></i> QR Kod Nasıl Çalışır?
+                </h6>
+                <small>
+                    <p>1. <strong>Oluştur:</strong> Yukarıda formu doldurarak QR kod oluşturun.</p>
+                    <p>2. <strong>Paylaş:</strong> Oluşturulan QR kod mobil uygulamaya gösterilir.</p>
+                    <p>3. <strong>Taramalı Giriş:</strong> Kullanıcı QR kodu taradığında otomatik olarak giriş yapar.</p>
+                    <p>4. <strong>Tek Kullanımlık:</strong> Her QR kod sadece bir kez kullanılabilir.</p>
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
