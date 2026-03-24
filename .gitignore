@@ -3,11 +3,11 @@ IstanbulSenin.MVC/appsettings.json
 IstanbulSenin.MVC/appsettings.Development.json
 
 ## Visual Studio Gereksizleri
-.vs/
 [Bb]in/
 [Oo]bj/
-*.user
-*.sln.docstates
+.vs/
+**/appsettings.json
+**/appsettings.Development.json
 
 ## Diğer
 out/

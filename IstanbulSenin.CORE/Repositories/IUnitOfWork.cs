@@ -12,10 +12,12 @@ namespace IstanbulSenin.CORE.Repositories
         IRepository<NotificationLog> NotificationLogs { get; }
         IRepository<Section> Sections { get; }
         IRepository<MiniAppItem> MiniAppItems { get; }
+        IRepository<QRCode> QRCodes { get; }
 
         Task<int> SaveChangesAsync();
         Task BeginTransactionAsync();
         Task CommitAsync();
         Task RollbackAsync();
+        IQueryable<T> Query<T>() where T : class;
     }
 }

@@ -2,6 +2,7 @@ using IstanbulSenin.BLL.Services.AdminUsers;
 using IstanbulSenin.BLL.Services.Auth;
 using IstanbulSenin.BLL.Services.MiniApps;
 using IstanbulSenin.BLL.Services.Notifications;
+using IstanbulSenin.BLL.Services.QRCodes;
 using IstanbulSenin.BLL.Services.Sections;
 using IstanbulSenin.BLL.Services.Seeding;
 using IstanbulSenin.CORE.Entities;
@@ -77,6 +78,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAdminUserService, AdminUserService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<INotificationLogService, NotificationLogService>();
+builder.Services.AddScoped<IQRCodeService, QRCodeService>();
 builder.Services.AddScoped<ISeedingService, SeedingService>();
 
 var app = builder.Build();
