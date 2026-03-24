@@ -1,6 +1,7 @@
 @model List<IstanbulSenin.CORE.Entities.Notification>
 @{
     ViewData["Title"] = "Bildirimler";
+    var turkeyTZ = TimeZoneInfo.FindSystemTimeZoneById("Turkey Standard Time");
 }
 
 @if (TempData["Success"] != null)
@@ -64,12 +65,12 @@
                             }
                             <span class="badge @cls">@label</span>
                         </td>
-                        <td class="text-muted small">@n.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                        <td class="text-muted small">@TimeZoneInfo.ConvertTimeFromUtc(n.CreatedAt, turkeyTZ).ToString("dd.MM.yyyy HH:mm")</td>
                         <td>
                             @if (n.IsSent)
                             {
                                 <span class="badge bg-success">Gönderildi</span>
-                                <div class="text-muted" style="font-size:0.7rem;">@n.SentAt?.ToString("dd.MM.yyyy HH:mm")</div>
+                                <div class="text-muted" style="font-size:0.7rem;">@(n.SentAt.HasValue ? TimeZoneInfo.ConvertTimeFromUtc(n.SentAt.Value, turkeyTZ).ToString("dd.MM.yyyy HH:mm") : "—")</div>
                             }
                             else
                             {

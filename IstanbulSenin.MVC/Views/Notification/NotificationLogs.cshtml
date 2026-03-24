@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Bildirim Gönderme Detayı";
+    var turkeyTZ = TimeZoneInfo.FindSystemTimeZoneById("Turkey Standard Time");
 }
 
 <div class="container-fluid mt-4">
@@ -41,7 +42,7 @@
                             {
                                 <span class="badge bg-warning text-dark float-start">ℹ Test Modu</span>
                             }
-                            <span class="float-end text-muted">@log.SentAt.ToString("dd.MM.yyyy HH:mm:ss")</span>
+                            <span class="float-end text-muted">@TimeZoneInfo.ConvertTimeFromUtc(log.SentAt, turkeyTZ).ToString("dd.MM.yyyy HH:mm:ss")</span>
                         </div>
                         <div class="card-body">
                             <p class="mb-2">

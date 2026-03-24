@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Bildirim Gönderme Geçmişi";
+    var turkeyTZ = TimeZoneInfo.FindSystemTimeZoneById("Turkey Standard Time");
 }
 
 <div class="container-fluid mt-4">
@@ -49,7 +50,7 @@
                                 <small class="text-muted">@log.Notification?.Body?.Substring(0, Math.Min(30, log.Notification.Body.Length))...</small>
                             </td>
                             <td>
-                                @log.SentAt.ToString("dd.MM.yyyy HH:mm:ss")
+                                @TimeZoneInfo.ConvertTimeFromUtc(log.SentAt, turkeyTZ).ToString("dd.MM.yyyy HH:mm:ss")
                             </td>
                             <td>
                                 @if (log.Status == "Success")
