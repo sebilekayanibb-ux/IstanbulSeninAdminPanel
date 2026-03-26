@@ -1,5 +1,6 @@
 using IstanbulSenin.CORE.Entities;
 using IstanbulSenin.HELPER.Constants;
+using IstanbulSenin.BLL.Services.Dashboard;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 
@@ -9,15 +10,18 @@ namespace IstanbulSenin.BLL.Services.AdminUsers
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IDashboardService _dashboardService;
         private readonly ILogger<AdminUserService> _logger;
 
         public AdminUserService(
             UserManager<AppUser> userManager,
             RoleManager<IdentityRole> roleManager,
+            IDashboardService dashboardService,
             ILogger<AdminUserService> logger)
         {
             _userManager = userManager;
             _roleManager = roleManager;
+            _dashboardService = dashboardService;
             _logger = logger;
         }
 
@@ -63,6 +67,7 @@ namespace IstanbulSenin.BLL.Services.AdminUsers
             foreach (var role in roles)
                 await _userManager.AddToRoleAsync(user, role);
 
+            _dashboardService.InvalidateDashboardCache();
             _logger.LogInformation("✓ Kullanıcı oluşturuldu: {Email} - Roller: {Roles}", email, string.Join(", ", roles));
             return (true, string.Empty);
         }
@@ -108,6 +113,7 @@ namespace IstanbulSenin.BLL.Services.AdminUsers
             foreach (var role in roles)
                 await _userManager.AddToRoleAsync(user, role);
 
+            _dashboardService.InvalidateDashboardCache();
             return (true, string.Empty);
         }
 
@@ -128,6 +134,7 @@ namespace IstanbulSenin.BLL.Services.AdminUsers
             var result = await _userManager.DeleteAsync(user);
             if (result.Succeeded)
             {
+                _dashboardService.InvalidateDashboardCache();
                 _logger.LogInformation("✓ Kullanıcı silindi: {Email}", user.Email);
                 return (true, string.Empty);
             }

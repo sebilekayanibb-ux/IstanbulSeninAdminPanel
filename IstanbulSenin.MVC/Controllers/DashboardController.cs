@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace IstanbulSenin.MVC.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,SuperAdmin")]
     public class DashboardController : Controller
     {
         private readonly IDashboardService _dashboardService;

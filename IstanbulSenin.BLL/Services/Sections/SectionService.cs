@@ -1,5 +1,6 @@
 using IstanbulSenin.CORE.Entities;
 using IstanbulSenin.CORE.Repositories;
+using IstanbulSenin.BLL.Services.Dashboard;
 using Microsoft.EntityFrameworkCore;
 
 namespace IstanbulSenin.BLL.Services.Sections
@@ -7,10 +8,12 @@ namespace IstanbulSenin.BLL.Services.Sections
     public class SectionService : ISectionService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IDashboardService _dashboardService;
 
-        public SectionService(IUnitOfWork unitOfWork)
+        public SectionService(IUnitOfWork unitOfWork, IDashboardService dashboardService)
         {
             _unitOfWork = unitOfWork;
+            _dashboardService = dashboardService;
         }
 
         public async Task<List<Section>> GetSectionsWithItemsAsync()
@@ -52,6 +55,7 @@ namespace IstanbulSenin.BLL.Services.Sections
             await _unitOfWork.Sections.AddAsync(section);
             await _unitOfWork.SaveChangesAsync();
 
+            _dashboardService.InvalidateDashboardCache();
             await RenormalizeOrdersAsync();
         }
 
@@ -73,6 +77,7 @@ namespace IstanbulSenin.BLL.Services.Sections
 
             _unitOfWork.Sections.Update(existing);
             await _unitOfWork.SaveChangesAsync();
+            _dashboardService.InvalidateDashboardCache();
             await RenormalizeOrdersAsync(existing.Id);
         }
 
@@ -84,6 +89,7 @@ namespace IstanbulSenin.BLL.Services.Sections
             _unitOfWork.Sections.Delete(section);
             await _unitOfWork.SaveChangesAsync();
 
+            _dashboardService.InvalidateDashboardCache();
             await RenormalizeOrdersAsync();
         }
 
@@ -96,6 +102,7 @@ namespace IstanbulSenin.BLL.Services.Sections
                 if (sec != null) sec.DisplayOrder = i + 1;
             }
             await _unitOfWork.SaveChangesAsync();
+            _dashboardService.InvalidateDashboardCache();
         }
 
         private async Task RenormalizeOrdersAsync(int preferredId = 0)

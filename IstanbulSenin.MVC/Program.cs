@@ -18,7 +18,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // 1. Veritabanı bağlantısı (EnableRetryOnFailure eklendi)
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), sql => sql.EnableRetryOnFailure()));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sql => sql.EnableRetryOnFailure())
+    .ConfigureWarnings(warnings =>
+        warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
 
 // 2. ASP.NET Core Identity — Güçlendirilmiş Güvenlik
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
@@ -68,6 +72,9 @@ builder.Services.Configure<SecurityStampValidatorOptions>(options =>
 
 builder.Services.AddControllersWithViews();
 
+// 3.5 Memory Cache (Dashboard ve diğer işlemler için)
+builder.Services.AddMemoryCache();
+
 // 4. Repository & Unit of Work (Dependency Injection)
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
@@ -91,7 +98,6 @@ using (var scope = app.Services.CreateScope())
     {
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        // 1. Migrationları uygula (veritabanı yoksa oluştur)
         logger.LogInformation("→ Migrationlar uygulanıyor...");
         db.Database.Migrate();
         logger.LogInformation("✓ Migrationlar tamamlandı.");
@@ -105,7 +111,6 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         logger.LogError(ex, "✗ Veritabanı migration/seed sırasında hata: {Message}", ex.Message);
-        // Uygulama başlayabilmeli, hata loglanmalı
     }
 }
 
@@ -119,13 +124,11 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
-// Authentication önce, Authorization sonra gelmeli
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
 
-// 6. Varsayılan rota
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Section}/{action=Index}/{id?}")

@@ -62,7 +62,36 @@
         </div>
     </div>
 
-    <!-- Grafik Satırı -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card bg-secondary text-white shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title text-uppercase mb-2">👤 Admin Kullanıcılar</h6>
+                    <h2 class="mb-0">@Model.TotalAdminUsers</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card bg-danger text-white shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title text-uppercase mb-2">📑 Toplam Bölümler</h6>
+                    <h2 class="mb-0">@Model.TotalSections</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card bg-purple text-white shadow-sm" style="background-color: #9b59b6 !important;">
+                <div class="card-body">
+                    <h6 class="card-title text-uppercase mb-2">🎮 Mini Uygulamalar</h6>
+                    <h2 class="mb-0">@Model.TotalMiniApps</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GRAFIK SATIRI -->
     <div class="row mb-4">
         <!-- Günlük İstatistikler -->
         <div class="col-md-8">
@@ -71,7 +100,16 @@
                     <h5 class="mb-0">📈 Günlük Gönderim İstatistikleri</h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="dailyChart" height="80"></canvas>
+                    @if (!Model.DailyStats.Any())
+                    {
+                        <div class="alert alert-warning mb-0">
+                            📊 Henüz günlük veri yok. (DailyStats: @Model.DailyStats.Count adet)
+                        </div>
+                    }
+                    else
+                    {
+                        <canvas id="dailyChart" height="80"></canvas>
+                    }
                 </div>
             </div>
         </div>
@@ -83,7 +121,16 @@
                     <h5 class="mb-0">👥 Hedef Kitle Dağılımı</h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="audienceChart" height="80"></canvas>
+                    @if (!Model.TargetAudienceDistribution.Any())
+                    {
+                        <div class="alert alert-warning mb-0">
+                            👥 Henüz kitle dağılımı yok. (Distribution: @Model.TargetAudienceDistribution.Count adet)
+                        </div>
+                    }
+                    else
+                    {
+                        <canvas id="audienceChart" height="80"></canvas>
+                    }
                 </div>
             </div>
         </div>
@@ -99,21 +146,21 @@
                 <div class="card-body">
                     <div class="row text-center">
                         <div class="col-md-4">
-                            <div class="p-3 bg-success bg-opacity-10 rounded mb-2">
-                                <h3 class="text-success mb-0">@Model.SuccessfulLogs</h3>
-                                <small class="text-muted">Başarılı</small>
+                            <div class="p-3 bg-success rounded mb-2" style="background-color: rgba(25, 135, 84, 0.15) !important;">
+                                <h3 class="text-success mb-0" style="font-weight: 700;">@Model.SuccessfulLogs</h3>
+                                <small class="text-success" style="font-weight: 600;">✓ Başarılı</small>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="p-3 bg-danger bg-opacity-10 rounded mb-2">
-                                <h3 class="text-danger mb-0">@Model.FailedLogs</h3>
-                                <small class="text-muted">Başarısız</small>
+                            <div class="p-3 bg-danger rounded mb-2" style="background-color: rgba(220, 53, 69, 0.15) !important;">
+                                <h3 class="text-danger mb-0" style="font-weight: 700;">@Model.FailedLogs</h3>
+                                <small class="text-danger" style="font-weight: 600;">✗ Başarısız</small>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="p-3 bg-warning bg-opacity-10 rounded mb-2">
-                                <h3 class="text-warning mb-0">@Model.TestLogs</h3>
-                                <small class="text-muted">Test</small>
+                            <div class="p-3 bg-warning rounded mb-2" style="background-color: rgba(255, 193, 7, 0.15) !important;">
+                                <h3 class="text-warning mb-0" style="font-weight: 700;">@Model.TestLogs</h3>
+                                <small class="text-warning" style="font-weight: 600;">🧪 Test</small>
                             </div>
                         </div>
                     </div>
@@ -201,24 +248,54 @@
     </div>
 </div>
 
-<!-- Chart.js CDN -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+<!-- DEBUG: Model Verileri -->
+<div style="display: none;" id="debugData">
+    DailyStats: @Model.DailyStats.Count
+    TargetAudience: @Model.TargetAudienceDistribution.Count
+    SuccessfulLogs: @Model.SuccessfulLogs
+    FailedLogs: @Model.FailedLogs
+</div>
+
+@section Scripts {
+<script>
+    console.log('Dashboard Model Verileri:');
+    console.log('- DailyStats:', @Model.DailyStats.Count, 'item');
+    console.log('- TargetAudienceDistribution:', @Model.TargetAudienceDistribution.Count, 'item');
+    console.log('- SuccessfulLogs:', @Model.SuccessfulLogs);
+    console.log('- FailedLogs:', @Model.FailedLogs);
+    console.log('- Chart object:', typeof Chart);
+
+    // Eğer Chart yüklü değilse hata göster
+    if (typeof Chart === 'undefined') {
+        console.error('❌ HATA: Chart.js yüklenmemiş!');
+    } else {
+        console.log('✅ Chart.js başarıyla yüklendi');
+    }
+</script>
 
 <script>
     // Günlük İstatistikler Grafik
-    const dailyCtx = document.getElementById('dailyChart').getContext('2d');
-    new Chart(dailyCtx, {
-        type: 'line',
-        data: {
-            labels: [@string.Join(", ", Model.DailyStats.Select(d => $"'{d.Date}'"))],
-            datasets: [{
-                label: 'Gönderilen Bildirimler',
-                data: [@string.Join(", ", Model.DailyStats.Select(d => d.Count))],
-                borderColor: '#0d6efd',
-                backgroundColor: 'rgba(13, 110, 253, 0.1)',
-                borderWidth: 2,
-                fill: true,
-                tension: 0.4,
+    if (typeof Chart !== 'undefined' && document.getElementById('dailyChart')) {
+        const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+
+        // JSON ile güvenli serialize et
+        const dailyLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DailyStats.Select(d => d.Date).ToList()));
+        const dailyData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DailyStats.Select(d => d.Count).ToList()));
+
+        console.log('Daily Chart Data:', dailyLabels, dailyData);
+
+        new Chart(dailyCtx, {
+            type: 'line',
+            data: {
+                labels: dailyLabels,
+                datasets: [{
+                    label: 'Gönderilen Bildirimler',
+                    data: dailyData,
+                    borderColor: '#0d6efd',
+                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
                 pointBackgroundColor: '#0d6efd',
                 pointBorderColor: '#fff',
                 pointBorderWidth: 2,
@@ -245,19 +322,30 @@
             }
         }
     });
+    } else {
+        console.error('❌ Daily Chart Hatası: Canvas veya Chart.js yüklü değil');
+    }
 
     // Hedef Kitle Dağılımı Pie Chart
-    const audienceCtx = document.getElementById('audienceChart').getContext('2d');
-    new Chart(audienceCtx, {
-        type: 'doughnut',
-        data: {
-            labels: [@string.Join(", ", Model.TargetAudienceDistribution.Select(d => $"'{d.Key}'"))],
-            datasets: [{
-                data: [@string.Join(", ", Model.TargetAudienceDistribution.Select(d => d.Value))],
-                backgroundColor: [
-                    '#0d6efd',
-                    '#198754',
-                    '#ffc107',
+    if (typeof Chart !== 'undefined' && document.getElementById('audienceChart')) {
+        const audienceCtx = document.getElementById('audienceChart').getContext('2d');
+
+        // JSON ile güvenli serialize et
+        const audienceLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TargetAudienceDistribution.Keys.ToList()));
+        const audienceData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TargetAudienceDistribution.Values.ToList()));
+
+        console.log('Audience Chart Data:', audienceLabels, audienceData);
+
+        new Chart(audienceCtx, {
+            type: 'doughnut',
+            data: {
+                labels: audienceLabels,
+                datasets: [{
+                    data: audienceData,
+                    backgroundColor: [
+                        '#0d6efd',
+                        '#198754',
+                        '#ffc107',
                     '#dc3545',
                     '#6f42c1'
                 ],
@@ -274,8 +362,12 @@
                 }
             }
         }
-    });
+        });
+    } else {
+        console.error('❌ Audience Chart Hatası: Canvas veya Chart.js yüklü değil');
+    }
 </script>
+}
 
 <style>
     .card {

@@ -1,3 +1,4 @@
+using IstanbulSenin.BLL.Services.Dashboard;
 using IstanbulSenin.CORE.Entities;
 using IstanbulSenin.CORE.Repositories;
 using IstanbulSenin.HELPER;
@@ -9,15 +10,18 @@ namespace IstanbulSenin.BLL.Services.Notifications
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly INotificationLogService _logService;
+        private readonly IDashboardService _dashboardService;
         private readonly ILogger<NotificationService> _logger;
 
         public NotificationService(
             IUnitOfWork unitOfWork,
             INotificationLogService logService,
+            IDashboardService dashboardService,
             ILogger<NotificationService> logger)
         {
             _unitOfWork = unitOfWork;
             _logService = logService;
+            _dashboardService = dashboardService;
             _logger = logger;
         }
 
@@ -56,6 +60,9 @@ namespace IstanbulSenin.BLL.Services.Notifications
                 await _unitOfWork.Notifications.AddAsync(notification);
                 await _unitOfWork.SaveChangesAsync();
 
+                // ✅ Dashboard cache'i temizle - Yeni veriler hesaplanacak!
+                _dashboardService.InvalidateDashboardCache();
+
                 _logger.LogInformation("Bildirim oluşturuldu: {NotificationTitle}", notification.Title);
                 return (true, string.Empty);
             }
@@ -93,6 +100,9 @@ namespace IstanbulSenin.BLL.Services.Notifications
                 _unitOfWork.Notifications.Update(existing);
                 await _unitOfWork.SaveChangesAsync();
 
+                // ✅ Dashboard cache'i temizle - Güncellenmiş veriler hesaplanacak!
+                _dashboardService.InvalidateDashboardCache();
+
                 _logger.LogInformation("Bildirim güncellendi: {NotificationId} - {NotificationTitle}", id, existing.Title);
                 return (true, string.Empty);
             }
@@ -116,17 +126,18 @@ namespace IstanbulSenin.BLL.Services.Notifications
 
                 try
                 {
-                    var testLog = new NotificationLog
+                    // ✅ Başarılı gönderim log kaydı ("Success" status)
+                    var successLog = new NotificationLog
                     {
                         NotificationId = notification.Id,
-                        Status = "Test",
+                        Status = "Success",  // ← "Test" yerine "Success"!
                         TargetAudience = notification.TargetAudience,
                         RecipientCount = 0,
                         ErrorMessage = null,
                         SentAt = DateTimeHelper.GetTurkeyNow()
                     };
 
-                    await _unitOfWork.NotificationLogs.AddAsync(testLog);
+                    await _unitOfWork.NotificationLogs.AddAsync(successLog);
 
                     notification.IsSent = true;
                     notification.SentAt = DateTimeHelper.GetTurkeyNow();
@@ -134,8 +145,11 @@ namespace IstanbulSenin.BLL.Services.Notifications
 
                     await _unitOfWork.SaveChangesAsync();
 
+                    // ✅ Dashboard cache'i temizle - Gönderim durumu değişti!
+                    _dashboardService.InvalidateDashboardCache();
+
                     _logger.LogInformation(
-                        "Bildirim gönderildi (Test): {NotificationId} - {Title}",
+                        "Bildirim gönderildi (Success): {NotificationId} - {Title}",
                         notification.Id,
                         notification.Title);
 
@@ -188,6 +202,8 @@ namespace IstanbulSenin.BLL.Services.Notifications
 
                 _unitOfWork.Notifications.Delete(notification);
                 await _unitOfWork.SaveChangesAsync();
+
+                _dashboardService.InvalidateDashboardCache();
 
                 _logger.LogInformation("Bildirim silindi: {NotificationId}", id);
                 return (true, string.Empty);

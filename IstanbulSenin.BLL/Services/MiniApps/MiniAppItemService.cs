@@ -1,5 +1,6 @@
 using IstanbulSenin.CORE.Entities;
 using IstanbulSenin.CORE.Repositories;
+using IstanbulSenin.BLL.Services.Dashboard;
 using Microsoft.EntityFrameworkCore;
 
 namespace IstanbulSenin.BLL.Services.MiniApps
@@ -7,10 +8,12 @@ namespace IstanbulSenin.BLL.Services.MiniApps
     public class MiniAppItemService : IMiniAppItemService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IDashboardService _dashboardService;
 
-        public MiniAppItemService(IUnitOfWork unitOfWork)
+        public MiniAppItemService(IUnitOfWork unitOfWork, IDashboardService dashboardService)
         {
             _unitOfWork = unitOfWork;
+            _dashboardService = dashboardService;
         }
 
         public async Task<List<MiniAppItem>> GetMiniAppsWithSectionsAsync() =>
@@ -63,6 +66,7 @@ namespace IstanbulSenin.BLL.Services.MiniApps
             await _unitOfWork.MiniAppItems.AddAsync(item);
             await _unitOfWork.SaveChangesAsync();
 
+            _dashboardService.InvalidateDashboardCache();
             await RenormalizeOrdersAsync();
         }
 
@@ -77,6 +81,7 @@ namespace IstanbulSenin.BLL.Services.MiniApps
 
             _unitOfWork.MiniAppItems.Update(trackedItem);
             await _unitOfWork.SaveChangesAsync();
+            _dashboardService.InvalidateDashboardCache();
             await RenormalizeOrdersAsync(trackedItem.Id);
         }
 
@@ -88,6 +93,7 @@ namespace IstanbulSenin.BLL.Services.MiniApps
             _unitOfWork.MiniAppItems.Delete(item);
             await _unitOfWork.SaveChangesAsync();
 
+            _dashboardService.InvalidateDashboardCache();
             await RenormalizeOrdersAsync();
         }
 
@@ -100,6 +106,7 @@ namespace IstanbulSenin.BLL.Services.MiniApps
                 if (item != null) item.DisplayOrder = i + 1;
             }
             await _unitOfWork.SaveChangesAsync();
+            _dashboardService.InvalidateDashboardCache();
         }
 
         private async Task RenormalizeOrdersAsync(int preferredId = 0)
