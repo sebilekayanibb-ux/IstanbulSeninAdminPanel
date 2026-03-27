@@ -4,8 +4,6 @@ namespace IstanbulSenin.HELPER
     {
         private static readonly TimeZoneInfo TurkeyTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Turkey Standard Time");
 
-        /// Türkiye saat diliminde şu anki zamanı döndürür (UTC+3)
-
         public static DateTime GetTurkeyNow()
         {
             return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TurkeyTimeZone);
@@ -20,7 +18,6 @@ namespace IstanbulSenin.HELPER
         {
             return date.Date.AddDays(1).AddSeconds(-1);
         }
-
 
         public static DateTime GetTurkeyStartOfDay(DateTime date)
         {

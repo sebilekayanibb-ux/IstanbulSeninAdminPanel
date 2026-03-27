@@ -88,6 +88,7 @@ namespace IstanbulSenin.MVC.Controllers
         public async Task<IActionResult> Send(int id)
         {
             var (success, error) = await _notificationService.SendAsync(id);
+
             if (!success)
                 TempData["Error"] = error;
             else

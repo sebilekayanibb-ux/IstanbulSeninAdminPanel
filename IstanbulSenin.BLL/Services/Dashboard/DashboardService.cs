@@ -255,10 +255,12 @@ namespace IstanbulSenin.BLL.Services.Dashboard
             {
                 var stats = new List<DailyStatistics>();
 
-                for (var date = startDate.Date; date < endDate.Date; date = date.AddDays(1))
+                for (var date = startDate.Date; date <= endDate.Date; date = date.AddDays(1))
                 {
+                    // Tüm status'ları say: Created + Test + Success
                     var count = logs.Count(l =>
-                        l.SentAt.Date == date && l.Status == "Success");
+                        l.SentAt.Date == date && 
+                        (l.Status == "Created" || l.Status == "Test" || l.Status == "Success"));
 
                     stats.Add(new DailyStatistics
                     {

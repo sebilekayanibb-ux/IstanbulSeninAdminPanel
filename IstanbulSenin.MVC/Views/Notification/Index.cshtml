@@ -68,12 +68,24 @@
                         <td>
                             @if (n.IsSent)
                             {
-                                <span class="badge bg-success">Gönderildi</span>
+                                <span class="badge bg-success">✓ Gönderildi</span>
+                                @if (n.IsTestMode)
+                                {
+                                    <span class="badge bg-warning text-dark ms-1">🧪 Test</span>
+                                }
                                 <div class="text-muted" style="font-size:0.7rem;">@n.SentAt?.ToString("dd.MM.yyyy HH:mm")</div>
                             }
                             else
                             {
-                                <span class="badge bg-light text-dark border">Beklemede</span>
+                                <span class="badge bg-light text-dark border">⏳ Beklemede</span>
+                                @if (n.IsTestMode)
+                                {
+                                    <span class="badge bg-warning text-dark ms-1">🧪 Test Modu</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-info text-dark ms-1">📤 Gerçek Gönderim</span>
+                                }
                             }
                         </td>
                         <td class="text-end pe-4">

@@ -4,6 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,12 +13,19 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="10.0.2" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.7" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\IstanbulSenin.BLL\IstanbulSenin.BLL.csproj" />
     <ProjectReference Include="..\IstanbulSenin.CORE\IstanbulSenin.CORE.csproj" />
     <ProjectReference Include="..\IstanbulSenin.HELPER\IstanbulSenin.HELPER.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Logging\" />
+    <Folder Include="Views\Audit\" />
+    <Folder Include="Views\TestDevice\" />
   </ItemGroup>
 
 </Project>

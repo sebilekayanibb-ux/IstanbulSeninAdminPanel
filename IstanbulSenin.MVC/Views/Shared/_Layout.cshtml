@@ -7,7 +7,11 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-    
+
+    <!-- ✅ SECURITY: Obfuscation & Console Protection -->
+    <script src="~/js/security-obfuscation.js"></script>
+    <!-- ✅ SECURITY: Advanced Frontend Protection -->
+    <script src="~/js/advanced-security.js"></script>
     <style>
         :root {
             --brand-vibrant: #FF007A;
@@ -158,7 +162,6 @@
                 <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Notification" ? "active" : "")" asp-controller="Notification" asp-action="Index">
                     <i class="bi bi-bell"></i> <span>Bildirimler</span>
                 </a>
-              
             }
         </nav>
 
@@ -198,16 +201,127 @@
         </section>
     </div>
 
+    <!-- ✅ LOADING SPINNER -->
+    <div id="loadingSpinner" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; display:flex; align-items:center; justify-content:center;">
+        <div class="text-white text-center">
+            <div class="spinner-border mb-3" role="status" style="width:3rem; height:3rem; border-color: #FF007A; border-right-color: transparent;">
+                <span class="visually-hidden">Yükleniyor...</span>
+            </div>
+            <p class="fw-bold">Yükleniyor...</p>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
+        // ✅ LOADING SPINNER HELPER (Sayfa load'da kapatmak için early tanımlama)
+        window.showLoading = function () {
+            $('#loadingSpinner').fadeIn(200);
+        };
+
+        window.hideLoading = function () {
+            $('#loadingSpinner').fadeOut(200);
+        };
+
+        $(window).on('load', function () {
+            window.hideLoading();
+        });
+
         $(document).ready(function () {
+            // ✅ Sayfa yüklenmesinde menü durumunu geri yükle (localStorage'den)
+            function restoreSidebarState() {
+                const isCollapsed = localStorage.getItem("sidebarCollapsed") === "true";
+                if (isCollapsed) {
+                    $("#sidebar").addClass("collapsed");
+                    $("#main-wrapper").addClass("expanded");
+                } else {
+                    $("#sidebar").removeClass("collapsed");
+                    $("#main-wrapper").removeClass("expanded");
+                }
+            }
+
+            restoreSidebarState();
+
+            window.hideLoading();
+
+            // Menü toggle butonu - localStorage'e kaydet
             $("#inner-toggle").click(function () {
                 $("#sidebar").toggleClass("collapsed");
                 $("#main-wrapper").toggleClass("expanded");
+
+                const isNowCollapsed = $("#sidebar").hasClass("collapsed");
+                localStorage.setItem("sidebarCollapsed", isNowCollapsed);
             });
+
+            $(".nav-link").click(function () {
+                if (window.innerWidth < 992) {  
+                    $("#sidebar").addClass("collapsed");
+                    $("#main-wrapper").addClass("expanded");
+                    localStorage.setItem("sidebarCollapsed", "true");
+                }
+            });
+
+            // ✅ TOAST NOTIFICATION HELPER
+            window.showToast = function (message, type = 'success', duration = 5000) {
+                const toastId = 'toast-' + Date.now();
+                const bgClass = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : 'bg-warning';
+                const icon = type === 'success' ? '✓' : type === 'error' ? '✗' : '⚠️';
+
+                const toastHTML = `
+                    <div id="${toastId}" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="toast-header ${bgClass} text-white">
+                            <strong class="me-auto">${icon} ${type === 'success' ? 'Başarılı' : type === 'error' ? 'Hata' : 'Uyarı'}</strong>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                        </div>
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                    </div>
+                `;
+
+                $('#toastContainer').append(toastHTML);
+                const toastElement = document.getElementById(toastId);
+                const toast = new bootstrap.Toast(toastElement);
+                toast.show();
+
+                // Otomatik kapat
+                setTimeout(() => {
+                    toastElement.remove();
+                }, duration);
+            };
+
+            // ✅ Form submit'te otomatik spinner göster ve hide et
+            $('form').on('submit', function (e) {
+                const excludeSpinner = $(this).data('no-spinner') === true;
+                if (!excludeSpinner) {
+                    window.showLoading();
+
+                    // Form gönderiminden sonra 2 saniye içinde spinner'ı gizle (fallback)
+                    setTimeout(() => {
+                        window.hideLoading();
+                    }, 3000);
+                }
+            });
+
+            // ✅ AJAX isteklerinde spinner kontrolü
+            $(document).on('ajaxStart', function () {
+                window.showLoading();
+            }).on('ajaxStop', function () {
+                window.hideLoading();
+            });
+
+            // ✅ CSRF Token - Tüm AJAX isteklerine otomatik ekle
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+            if (token) {
+                $.ajaxSetup({
+                    headers: {
+                        'RequestVerificationToken': token
+                    }
+                });
+            }
         });
     </script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 

@@ -11,12 +11,12 @@ using IstanbulSenin.DAL;
 using IstanbulSenin.DAL.Repositories;
 using IstanbulSenin.HELPER.Constants;
 using IstanbulSenin.MVC;
+using IstanbulSenin.MVC.Middleware;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Veritabanı bağlantısı (EnableRetryOnFailure eklendi)
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection"),
@@ -24,21 +24,17 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     .ConfigureWarnings(warnings =>
         warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
 
-// 2. ASP.NET Core Identity — Güçlendirilmiş Güvenlik
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 {
-    // Şifre politikası — GÜÇLÜ
-    options.Password.RequireDigit = true;                    // ✓ Rakam zorunlu
-    options.Password.RequireUppercase = true;               // ✓ Büyük harf zorunlu
-    options.Password.RequireNonAlphanumeric = false;        // ✓ Özel karakter istenmez
-    options.Password.RequiredLength = 6;                   // ✓ En az 6 karakter
+    options.Password.RequireDigit = true;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequiredLength = 6;
 
-    // Hesap kilitleme — BRUTE-FORCE KORUMA
-    options.Lockout.AllowedForNewUsers = true;              // ✓ Kilitleme aktif
-    options.Lockout.MaxFailedAccessAttempts = 5;           // ✓ 5 başarısız deneme
-    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15); // ✓ 15 dakika kilitle
+    options.Lockout.AllowedForNewUsers = true;
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
 
-    // E-posta benzersiz olmalı
     options.User.RequireUniqueEmail = true;
 })
 .AddEntityFrameworkStores<AppDbContext>()
@@ -46,45 +42,47 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 .AddErrorDescriber<TurkishIdentityErrorDescriber>()
 .AddClaimsPrincipalFactory<AppUserClaimsPrincipalFactory>();
 
-// 3. Cookie ayarları — Güvenli (HttpOnly, Secure, SameSite)
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = AppConstants.Paths.LoginPath;
     options.AccessDeniedPath = AppConstants.Paths.AccessDeniedPath;
     options.ExpireTimeSpan = TimeSpan.FromHours(8);
     options.SlidingExpiration = true;
-
-    // ✓ XSS saldırılarından koruma
     options.Cookie.HttpOnly = true;
-
-    // ✓ HTTPS-only (üretim ortamı)
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-
-    // ✓ CSRF saldırılarından koruma
     options.Cookie.SameSite = SameSiteMode.Strict;
 });
 
-// SecurityStamp: kullanıcı silindiğinde veya rolü değiştiğinde cookie geçersiz sayılır
 builder.Services.Configure<SecurityStampValidatorOptions>(options =>
 {
     options.ValidationInterval = TimeSpan.Zero;
 });
 
 builder.Services.AddControllersWithViews();
-
-// 3.5 Memory Cache (Dashboard ve diğer işlemler için)
 builder.Services.AddMemoryCache();
 
-// 4. Repository & Unit of Work (Dependency Injection)
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new()
+    {
+        Title = "İstanbul Senin Admin Panel API",
+        Version = "v1",
+        Description = "Mobil app ve 3. party entegrasyonlar için REST API"
+    });
 
-// 5. Servis kayıtları (Dependency Injection)
+    var xmlFile = Path.Combine(AppContext.BaseDirectory, "IstanbulSenin.MVC.xml");
+    if (File.Exists(xmlFile))
+        c.IncludeXmlComments(xmlFile);
+});
+
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<ISectionService, SectionService>();
 builder.Services.AddScoped<IMiniAppItemService, MiniAppItemService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAdminUserService, AdminUserService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<INotificationLogService, NotificationLogService>();
+builder.Services.AddScoped<INotificationSendingService, MockNotificationSender>();
 builder.Services.AddScoped<ISeedingService, SeedingService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 
@@ -98,7 +96,7 @@ using (var scope = app.Services.CreateScope())
     {
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        logger.LogInformation("→ Migrationlar uygulanıyor...");
+        logger.LogInformation("Database migrations started...");
         db.Database.Migrate();
         logger.LogInformation("✓ Migrationlar tamamlandı.");
 
@@ -114,7 +112,23 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// 5. Middleware
+// Middleware
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "İstanbul Senin API v1");
+        c.RoutePrefix = "swagger";
+    });
+}
+
+// ✅ GÜVENLIK: Global Exception Handler
+app.UseGlobalExceptionHandler();
+
+// ✅ GÜVENLIK: Rate Limiting (Brute-force koruması)
+app.UseRateLimiting();
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");

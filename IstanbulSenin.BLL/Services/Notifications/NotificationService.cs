@@ -11,17 +11,20 @@ namespace IstanbulSenin.BLL.Services.Notifications
         private readonly IUnitOfWork _unitOfWork;
         private readonly INotificationLogService _logService;
         private readonly IDashboardService _dashboardService;
+        private readonly INotificationSendingService _notificationSender;
         private readonly ILogger<NotificationService> _logger;
 
         public NotificationService(
             IUnitOfWork unitOfWork,
             INotificationLogService logService,
             IDashboardService dashboardService,
+            INotificationSendingService notificationSender,
             ILogger<NotificationService> logger)
         {
             _unitOfWork = unitOfWork;
             _logService = logService;
             _dashboardService = dashboardService;
+            _notificationSender = notificationSender;
             _logger = logger;
         }
 
@@ -60,7 +63,20 @@ namespace IstanbulSenin.BLL.Services.Notifications
                 await _unitOfWork.Notifications.AddAsync(notification);
                 await _unitOfWork.SaveChangesAsync();
 
-                // ✅ Dashboard cache'i temizle - Yeni veriler hesaplanacak!
+                // 📝 Bildirim oluşturulması da log'a kaydet (Dashboard'da "Oluşturulan" göstermek için)
+                var creationLog = new NotificationLog
+                {
+                    NotificationId = notification.Id,
+                    Status = "Created",
+                    TargetAudience = notification.TargetAudience,
+                    RecipientCount = 0,
+                    ErrorMessage = null,
+                    SentAt = DateTimeHelper.GetTurkeyNow(),
+                    Metadata = $"{{\"mode\": \"{(notification.IsTestMode ? "test" : "production")}\", \"action\": \"created\"}}"
+                };
+                await _unitOfWork.NotificationLogs.AddAsync(creationLog);
+                await _unitOfWork.SaveChangesAsync();
+
                 _dashboardService.InvalidateDashboardCache();
 
                 _logger.LogInformation("Bildirim oluşturuldu: {NotificationTitle}", notification.Title);
@@ -96,6 +112,7 @@ namespace IstanbulSenin.BLL.Services.Notifications
                 existing.Title = notification.Title;
                 existing.Body = notification.Body;
                 existing.TargetAudience = notification.TargetAudience;
+                existing.IsTestMode = notification.IsTestMode;
 
                 _unitOfWork.Notifications.Update(existing);
                 await _unitOfWork.SaveChangesAsync();
@@ -126,18 +143,24 @@ namespace IstanbulSenin.BLL.Services.Notifications
 
                 try
                 {
-                    // ✅ Başarılı gönderim log kaydı ("Success" status)
-                    var successLog = new NotificationLog
+                    // ✅ Test Mode veya Gerçek Gönderim
+                    string logStatus = notification.IsTestMode ? "Test" : "Success";
+                    string targetTopic = notification.IsTestMode ? "test-only" : "all-users";
+
+                    var notificationLog = new NotificationLog
                     {
                         NotificationId = notification.Id,
-                        Status = "Success",  // ← "Test" yerine "Success"!
+                        Status = logStatus,
                         TargetAudience = notification.TargetAudience,
                         RecipientCount = 0,
                         ErrorMessage = null,
-                        SentAt = DateTimeHelper.GetTurkeyNow()
+                        SentAt = DateTimeHelper.GetTurkeyNow(),
+                        Metadata = notification.IsTestMode
+                            ? $"{{\"mode\": \"test\", \"topic\": \"{targetTopic}\", \"note\": \"Test modunda gönderildi\"}}"
+                            : $"{{\"mode\": \"production\", \"topic\": \"{targetTopic}\", \"note\": \"Gerçek gönderim\"}}"
                     };
 
-                    await _unitOfWork.NotificationLogs.AddAsync(successLog);
+                    await _unitOfWork.NotificationLogs.AddAsync(notificationLog);
 
                     notification.IsSent = true;
                     notification.SentAt = DateTimeHelper.GetTurkeyNow();
@@ -145,11 +168,23 @@ namespace IstanbulSenin.BLL.Services.Notifications
 
                     await _unitOfWork.SaveChangesAsync();
 
-                    // ✅ Dashboard cache'i temizle - Gönderim durumu değişti!
+                    System.Diagnostics.Debug.WriteLine($"Sending notification: ID={notification.Id}, Topic={targetTopic}");
+
+                    var (pushSuccess, pushError) = await _notificationSender.SendAsync(notification.Id, targetTopic);
+
+                    if (!pushSuccess)
+                    {
+                        _logger.LogWarning(
+                            "Push notification gönderilemedi: {NotificationId}, Error: {Error}",
+                            notification.Id,
+                            pushError);
+                    }
+
                     _dashboardService.InvalidateDashboardCache();
 
                     _logger.LogInformation(
-                        "Bildirim gönderildi (Success): {NotificationId} - {Title}",
+                        "Bildirim gönderildi ({Mode}): {NotificationId} - {Title}",
+                        logStatus,
                         notification.Id,
                         notification.Title);
 

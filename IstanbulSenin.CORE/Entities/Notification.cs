@@ -15,13 +15,14 @@ namespace IstanbulSenin.CORE.Entities
         // "all" = herkes, "guest" = misafir, "regular" = kayıtlı kullanıcı
         public string TargetAudience { get; set; } = "all";
 
+        /// Test modunda gönderilir mi? (true = Test, false = Gerçek Gönderim)
+        public bool IsTestMode { get; set; } = true;
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public bool IsSent { get; set; }
         public DateTime? SentAt { get; set; }
 
-        /// <summary>
         /// Bu bildirimin gönderme geçmişi (log kayıtları)
-        /// </summary>
         public List<NotificationLog> Logs { get; set; } = new();
     }
 }
