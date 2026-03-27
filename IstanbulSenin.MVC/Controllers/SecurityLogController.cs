@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace IstanbulSenin.MVC.Controllers
 {
@@ -43,3 +42,6 @@ namespace IstanbulSenin.MVC.Controllers
         public Dictionary<string, object> Details { get; set; }
     }
 }
+
+
+
